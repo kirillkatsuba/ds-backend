@@ -8,47 +8,43 @@ class ImageReaderClient:
         self.host = host
         self.timeout = timeout
 
-    def read_plate_one_number(self, image_id: int):
+    def read_plate_one_number(self, im: int):
         try:
             res = requests.get(
-                f'{self.host}/{image_id}',
-                headers  = {'Accept': 'image/*'},
+                f'{self.host}/{im}',
+                headers  = {'Content-Type': 'application/json'},
                 timeout = self.timeout
             )
-
             res.raise_for_status()
+        
+        except requests.exceptions.HTTPError:
+            logging.error('error while downloading image')
 
-            if 'image' not in res.headers['Content-Type']:
-                logging.error('image not found')
-                return {'error': 'image not found'}, 404
+            return {
+                'error': 'error while downloading image',
+                'status_code': 404
+                }
 
-            return {'image_data': res.content}, 200
+        except requests.exceptions.Timeout:
+            logging.error(f'timeout error')
 
-        except Timeout:
-            logging.error(f'timeout {image_id}')
-            return {'error': f'timeout {image_id}'}, 408
-        except RequestException as reqerror:
-            logging.error('image not found')
-            return {'error': 'image not found'}, 404
+            return {
+                'error': 'timeout error', 
+                'status_code': 408
+                }
 
-    # def read_plate_several_numbers(self, im: list(int)):
-    #     try:
-    #         res = requests.get(
-    #             f'{self.host}/{im}', 
-    #             headers= {'Accept': 'image/*'},
-    #             timeout=self.timeout,
-    #         )
-    #         res.raise_for_status()
+        return {
+            'image_data': res.content, 
+            'status_code': 200
+            }
 
-    #     except requests.exceptions.HTTPError:  
-    #         logging.error('error while doownloading image')
-    #         return {'error': 'image not found'}, 400
+    def read_plate_several_numbers(self, ims: str):
+        result = {}
+        ims_ids = list(map(int, im.split(',')))
+        for im in ims_ids:
+            result[im] = self.read_plate_one_number(im)
 
-    #     except Timeout: 
-    #         logging.error(f'timeout error')
-    #         return {'error': f'timeout error'}, 400
-
-    #     return res.content, 200
+        return result
 
 
 if __name__ == '__main__':
