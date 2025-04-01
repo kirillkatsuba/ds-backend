@@ -8,7 +8,7 @@ class PlateReaderCLient:
     def read_plate_number(self, im):
         res = requests.post(
             f'{self.host}/plate_reader', 
-            headers= {'Content-Type': 'application/json'}, 
+            headers= {'Content-Type': 'application/x-www-form-urlencoded'}, 
             data=im,
         )
         

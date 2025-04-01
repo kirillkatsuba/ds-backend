@@ -2,7 +2,6 @@ from models.plate_reader import PlateReader, InvalidImage
 from image_client import ImageReaderClient
 from plate_reader_client import PlateReaderCLient
 from flask import Flask, request
-from unicode_map import UTF_MAP, return_to_russian
 import logging
 import io
 import PIL
@@ -23,7 +22,7 @@ def plate_reader():
         logging.error('Invalid image')
         return {'error': 'Invalid image'}, 400
   
-    return {'result': return_to_russian(result)}
+    return {'result': result}
 
 
 @app.route('/get_image/<int:im>', methods=['GET'])
@@ -37,7 +36,7 @@ def get_image(im: int):
     client = PlateReaderCLient(host='http://127.0.0.1:8080')
     result = client.read_plate_number(binary_image['image_data'])['result']
 
-    return {'result': return_to_russian(result)}
+    return {'result': result}
 
 
 @app.route('/get_image/<string:ims>', methods=['GET'])
